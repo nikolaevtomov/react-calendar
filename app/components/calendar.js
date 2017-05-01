@@ -30,10 +30,8 @@ const Calendar = ({
     calendar__day: true,
     calendar__today: prettyFormat(day) === prettyFormat(today),
     'calendar__this-month': Moment(day).format('MM') === Moment(date).format('MM')
-    // selected: prettyFormat(day) === prettyFormat(selectedDate)
   })
   const handleOnClick = day => console.log(day)
-  // const handleOnClick = day => selectDate(day)
   const renderDays = days.map(day =>
     <Day handleClick={handleOnClick} key={day} day={day} dayClass={classes(day)} />)
 
@@ -50,15 +48,6 @@ const Calendar = ({
     </select>
   )
 
-  // const diffPrevDays = start.format('e')
-  // var endPreMonth = Moment(start).subtract(1, 'months').endOf('month').format()
-  // const startPreMonth = Moment(endPreMonth).subtract(diffPrevDays, 'days').format()
-  // const rangePreDays = Moment.range(startPreMonth, endPreMonth)
-  // let preDays = Array.from(rangePreDays.by('day', { step: 1 }))
-
-  // const renderPrevDays = preDays.map(day =>
-  //   <Day handleClick={handleOnClick} key={day} day={day} dayClass={classes(day)} />)
-
   const weekNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
   return (
@@ -71,7 +60,6 @@ const Calendar = ({
       </div>
       {<CalendarHeader {...{weekNames}} />}
       <ul className={'calendar'}>
-        {/* {renderPrevDays} */}
         {renderDays}
       </ul>
     </div>
