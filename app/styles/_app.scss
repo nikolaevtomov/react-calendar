@@ -1,0 +1,39 @@
+/*! _app.scss */
+
+@import "variables";
+
+*,
+*:before,
+*:after{
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 10px;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.6rem;
+  background: $color4;
+}
+
+ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+a {
+  color: $color4;
+  text-decoration: none;
+}
+
+h2 {
+  margin: 0 0 1rem;
+  font-size: 3rem;
+  color: $color2;
+}
+
+input {
+  font-size: 1.4rem;
+}

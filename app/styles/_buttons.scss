@@ -1,0 +1,41 @@
+/*! _buttons.scss */
+
+@import "variables";
+
+.button-group {
+  display: flex;
+  margin: 1.4rem 0;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 10rem;
+  height: 3.6rem;
+  margin: 0 1rem 1rem 0;
+  background-color: lighten($color6, 2%);
+  color: $color4;
+  border: 0 none;
+  border-radius: 2px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: lighten($color6, 5%);
+  }
+  &.active {
+    color: $color6;
+    background-color: $color4;
+    border: 2px solid $color6;
+  }
+  &.add {
+    background-color: $colorSuccess;
+    &:hover {
+      background-color: lighten($colorSuccess, 5%);
+    }
+  }
+  &[disabled] {
+    background-color: $color5;
+    opacity: .5;
+  }
+}
