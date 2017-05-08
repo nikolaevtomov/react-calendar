@@ -1,5 +1,4 @@
-import { takeLatest } from 'redux-saga'
-import { put } from 'redux-saga/effects'
+import { takeLatest, put } from 'redux-saga/effects'
 import { push } from 'react-router-redux'
 import { prettyFormat } from 'root/utils'
 

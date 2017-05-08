@@ -1,5 +1,4 @@
-import { takeLatest } from 'redux-saga'
-import { fork, put } from 'redux-saga/effects'
+import { takeLatest, fork, put } from 'redux-saga/effects'
 
 import updateSelectedDate from 'root/sagas/update-selected-date'
 import incrementSelectedDate from 'root/sagas/increment-month'
@@ -22,7 +21,7 @@ export function* initializeAppState () {
 }
 
 export function* watchInitializeAppState () {
-  yield * takeLatest(APP_LOADING_STARTED, initializeAppState)
+  yield takeLatest(APP_LOADING_STARTED, initializeAppState)
 }
 
 export default function* startForeman () {
