@@ -1,5 +1,4 @@
-import { takeLatest } from 'redux-saga'
-import { put, select } from 'redux-saga/effects'
+import { takeLatest, put, select } from 'redux-saga/effects'
 import { push } from 'react-router-redux'
 import { Moment, prettyFormat } from 'root/utils'
 
