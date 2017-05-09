@@ -11,9 +11,6 @@ var DEPLOYMENT_ENV = process.env.DEPLOYMENT_ENV || 'local'
 var isDev = BUILD_ENV !== 'production'
 
 module.exports = {
-  // eval-source-map, cheap-source-map or cheap-module-source-map
-  devtool: isDev ? 'eval' : 'cheap-module-source-map',
-  context: path.join(__dirname, 'app'),
 
   entry: [
     'babel-polyfill',
@@ -24,9 +21,9 @@ module.exports = {
   ],
 
   output: {
+    path: path.join(__dirname, 'dist'),
     filename: isDev ? 'bundle.js' : 'bundle.[hash].js',
-    publicPath: '/',
-    path: path.join(__dirname, 'dist')
+    publicPath: '/'
   },
 
   module: {
@@ -43,6 +40,15 @@ module.exports = {
     ]
   },
 
+  resolve: {
+    modulesDirectories: ['node_modules'],
+    extensions: ['', '.jsx', '.scss', '.js', '.json'],
+    alias: {
+      root: path.resolve(__dirname, 'app'),
+      static: path.resolve(__dirname, 'static')
+    }
+  },
+
   include: [
     path.resolve(__dirname, 'node_modules')
   ],
@@ -52,6 +58,16 @@ module.exports = {
       defaults: [precss, autoprefixer],
       cleaner: [autoprefixer({ browsers: ['last 2 version'] })]
     }
+  },
+
+  // eval-source-map, cheap-source-map or cheap-module-source-map
+  devtool: isDev ? 'eval' : 'cheap-module-source-map',
+
+  context: path.join(__dirname, 'app'),
+
+  devServer: {
+    historyApiFallback: true,
+    contentBase: path.join(__dirname, 'app')
   },
 
   plugins: [
@@ -87,20 +103,6 @@ module.exports = {
       threshold: 10240,
       minRatio: 0
     })
-  ],
-
-  resolve: {
-    modulesDirectories: ['node_modules'],
-    alias: {
-      root: path.resolve(__dirname, 'app'),
-      static: path.resolve(__dirname, 'static')
-    },
-    extensions: ['', '.jsx', '.scss', '.js', '.json']
-  },
-
-  devServer: {
-    historyApiFallback: true,
-    contentBase: path.join(__dirname, 'app')
-  }
+  ]
 
 }
