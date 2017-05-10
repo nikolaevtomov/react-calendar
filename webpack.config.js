@@ -2,21 +2,23 @@ var webpack = require('webpack')
 var path = require('path')
 var ExtractTextPlugin = require('extract-text-webpack-plugin')
 var CompressionPlugin = require('compression-webpack-plugin')
-var precss = require('precss')
-var autoprefixer = require('autoprefixer')
 
 var BUILD_ENV = process.env.NODE_ENV
 var DEPLOYMENT_ENV = process.env.DEPLOYMENT_ENV || 'local'
+var HOST = process.env.CLIENT_HOST || '0.0.0.0'
+var PORT = process.env.CLIENT_PORT || 3000
 
 var isDev = BUILD_ENV !== 'production'
+
+// console.log('NODE_ENV:', process.env.NODE_ENV)
 
 module.exports = {
 
   entry: [
     'babel-polyfill',
-    'webpack-dev-server/client?http://0.0.0.0:8080',
-    'webpack/hot/only-dev-server',
     'react-hot-loader/patch',
+    `webpack-dev-server/client?http://${HOST}:${PORT}`,
+    'webpack/hot/only-dev-server',
     path.join(__dirname, 'app', 'index.js')
   ],
 
@@ -27,54 +29,78 @@ module.exports = {
   },
 
   module: {
-    loaders: [
+    rules: [
       {
         test: /.js?$/,
-        loader: 'babel?cacheDirectory=true',
         include: path.join(__dirname, 'app'),
-        exclude: /(node_modules)/
+        exclude: /(node_modules)/,
+        // use: ['babel-loader'],
+        use: ['babel-loader?cacheDirectory=true']
       },
-      { test: /\.css$/, loader: ExtractTextPlugin.extract('style!css!postcss') },
-      { test: /\.scss$/, loader: ExtractTextPlugin.extract('css!postcss!sass') },
-      { test: /\.html$/, loader: 'html' }
+      {
+        test: /\.css$/,
+        use: ExtractTextPlugin.extract([
+          { loader: 'style-loader', options: {} },
+          { loader: 'css-loader', options: {} },
+          { loader: 'postcss-loader', options: {} }
+        ])
+      },
+      {
+        test: /\.scss$/,
+        use: ExtractTextPlugin.extract({
+          fallback: 'style-loader',
+          use: [
+            { loader: 'css-loader', options: {} },
+            { loader: 'postcss-loader', options: {} },
+            { loader: 'sass-loader', options: {} }
+          ]
+        })
+      },
+      { test: /\.html$/, use: ['html-loader'] },
+      {
+        test: /\.(jpg|png|gif)$/,
+        use: 'file-loader'
+      },
+      {
+        test: /\.(woff|woff2|eot|ttf|svg)$/,
+        use: {
+          loader: 'url-loader',
+          options: {
+            limit: 100000
+          }
+        }
+      }
     ]
   },
 
   resolve: {
-    modulesDirectories: ['node_modules'],
-    extensions: ['', '.jsx', '.scss', '.js', '.json'],
+    modules: ['node_modules'],
+    extensions: ['.jsx', '.scss', '.js', '.json'],
     alias: {
       root: path.resolve(__dirname, 'app'),
       static: path.resolve(__dirname, 'static')
     }
   },
 
-  include: [
-    path.resolve(__dirname, 'node_modules')
-  ],
-
-  postcss: function () {
-    return {
-      defaults: [precss, autoprefixer],
-      cleaner: [autoprefixer({ browsers: ['last 2 version'] })]
-    }
-  },
-
-  // eval-source-map, cheap-source-map or cheap-module-source-map
+  // eval, source-map, eval-source-map, cheap-source-map or cheap-module-source-map
   devtool: isDev ? 'eval' : 'cheap-module-source-map',
 
   context: path.join(__dirname, 'app'),
 
   devServer: {
+    hot: true,
     historyApiFallback: true,
-    contentBase: path.join(__dirname, 'app')
+    contentBase: path.join(__dirname, 'app'),
+    host: HOST,
+    port: PORT
   },
 
   plugins: [
-    new ExtractTextPlugin(isDev ? 'bundle.css' : 'bundle.[hash].css'),
-    new webpack.optimize.DedupePlugin(),
-    new webpack.optimize.OccurenceOrderPlugin(),
-    new webpack.NoErrorsPlugin(),
+    new webpack.HotModuleReplacementPlugin(),
+    new ExtractTextPlugin({
+      filename: isDev ? 'bundle.css' : 'bundle.[hash].css',
+      allChunks: true
+    }),
     new webpack.DefinePlugin({
       '__DEV__': JSON.stringify(isDev),
       '__DEBUG__': JSON.stringify(process.env.DEBUG),
@@ -91,9 +117,7 @@ module.exports = {
         unsafe_comps: true,
         screw_ie8: true
       },
-      output: {
-        comments: false
-      },
+      output: { comments: false },
       exclude: [/\.min\.js$/gi]
     }),
     new CompressionPlugin({
