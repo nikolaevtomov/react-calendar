@@ -39,7 +39,12 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: ExtractTextPlugin.extract([
+        use: isDev ? [
+          { loader: 'style-loader', options: {} },
+          { loader: 'css-loader', options: {} },
+          { loader: 'postcss-loader', options: {} }
+        ]
+        : ExtractTextPlugin.extract([
           { loader: 'style-loader', options: {} },
           { loader: 'css-loader', options: {} },
           { loader: 'postcss-loader', options: {} }
@@ -47,7 +52,13 @@ module.exports = {
       },
       {
         test: /\.scss$/,
-        use: ExtractTextPlugin.extract({
+        use: isDev ? [
+          { loader: 'style-loader', options: {} },
+          { loader: 'css-loader', options: {} },
+          { loader: 'postcss-loader', options: {} },
+          { loader: 'sass-loader', options: {} }
+        ]
+        : ExtractTextPlugin.extract({
           fallback: 'style-loader',
           use: [
             { loader: 'css-loader', options: {} },
@@ -83,7 +94,7 @@ module.exports = {
   },
 
   // eval, source-map, eval-source-map, cheap-source-map or cheap-module-source-map
-  devtool: isDev ? 'eval' : 'cheap-module-source-map',
+  devtool: isDev ? 'cheap-source-map' : 'cheap-module-source-map',
 
   context: path.join(__dirname, 'app'),
 
@@ -96,11 +107,16 @@ module.exports = {
   },
 
   plugins: [
+
     new webpack.HotModuleReplacementPlugin(),
+
     new ExtractTextPlugin({
-      filename: isDev ? 'bundle.css' : 'bundle.[hash].css',
+      disable: isDev,
+      // filename: isDev ? 'bundle.css' : 'bundle.[hash].css',
+      filename: 'bundle.[hash].css',
       allChunks: true
     }),
+
     new webpack.DefinePlugin({
       '__DEV__': JSON.stringify(isDev),
       '__DEBUG__': JSON.stringify(process.env.DEBUG),
@@ -108,6 +124,7 @@ module.exports = {
       'process.env.NODE_ENV': JSON.stringify(BUILD_ENV),
       '__DEPLOYMENT_ENV__': JSON.stringify(DEPLOYMENT_ENV)
     }),
+
     new webpack.optimize.UglifyJsPlugin({
       mangle: true,
       compress: {
@@ -120,6 +137,7 @@ module.exports = {
       output: { comments: false },
       exclude: [/\.min\.js$/gi]
     }),
+
     new CompressionPlugin({
       asset: '[path].gz[query]',
       algorithm: 'gzip',
@@ -127,6 +145,7 @@ module.exports = {
       threshold: 10240,
       minRatio: 0
     })
+
   ]
 
 }
