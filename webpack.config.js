@@ -99,18 +99,6 @@ module.exports = {
 
   plugins: [
 
-    new HtmlWebpackPlugin({
-      template: path.join(__dirname, 'app', 'index.html')
-    }),
-
-    new webpack.HotModuleReplacementPlugin(),
-
-    new ExtractTextPlugin({
-      disable: isDev,
-      filename: 'bundle.[hash].css',
-      allChunks: true
-    }),
-
     new webpack.DefinePlugin({
       '__DEV__': JSON.stringify(isDev),
       '__DEBUG__': JSON.stringify(process.env.DEBUG),
@@ -119,9 +107,23 @@ module.exports = {
       '__DEPLOYMENT_ENV__': JSON.stringify(DEPLOYMENT_ENV)
     }),
 
+    new ExtractTextPlugin({
+      disable: isDev,
+      filename: 'bundle.[hash].css',
+      allChunks: true
+    }),
+
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, 'app', 'index.html')
+    }),
+
     new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /en/) // eslint-disable-line
 
-  ].concat(isDev ? [] : [
+  ].concat(isDev ? [
+
+    new webpack.HotModuleReplacementPlugin()
+
+  ] : [
 
     new webpack.optimize.UglifyJsPlugin({
       mangle: {
@@ -168,6 +170,7 @@ module.exports = {
       threshold: 10240,
       minRatio: 0
     })
+
   ])
 
 }
