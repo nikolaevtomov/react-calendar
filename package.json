@@ -7,7 +7,7 @@
     "dev": "cross-env NODE_ENV=development webpack-dev-server --progress --colors",
     "build:cache": "sw-precache --root=dist",
     "build:clean": "rm -rf dist && mkdir dist",
-    "build:copy": "cp ./app/index.html ./dist/ && cp -R ./static ./dist/static",
+    "build:copy": "cp ./app/index.html ./dist/ && cp -R ./app/static ./dist/static",
     "build:js": "cross-env NODE_ENV=production webpack --progress --colors --display-error-details",
     "build:all": "npm run build:clean && npm run build:copy && npm run build:js && npm run build:cache",
     "build": "npm run build:all",

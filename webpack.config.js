@@ -13,7 +13,7 @@ const isDev = BUILD_ENV !== 'production'
 
 // console.log('BUILD_ENV', BUILD_ENV)
 
-const config = {
+module.exports = {
 
   entry: [
     'babel-polyfill',
@@ -25,7 +25,7 @@ const config = {
 
   output: {
     path: path.join(__dirname, 'dist'),
-    filename: isDev ? 'bundle.js' : 'bundle.[hash].js',
+    filename: isDev ? 'bundle.js' : 'bundle.js',
     publicPath: '/'
   },
 
@@ -76,7 +76,8 @@ const config = {
     extensions: ['.jsx', '.scss', '.js', '.json'],
     alias: {
       root: path.resolve(__dirname, 'app'),
-      static: path.resolve(__dirname, 'static')
+      fonts: path.resolve(__dirname, 'app/static/fonts'),
+      images: path.resolve(__dirname, 'app/static/images')
     }
   },
 
@@ -110,14 +111,11 @@ const config = {
       '__ENVIRONMENT__': JSON.stringify(BUILD_ENV),
       'process.env.NODE_ENV': JSON.stringify(BUILD_ENV),
       '__DEPLOYMENT_ENV__': JSON.stringify(DEPLOYMENT_ENV)
-    })
+    }),
 
-  ]
+    new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /en/) // eslint-disable-line
 
-}
-
-if (process.env.NODE_ENV === 'production') {
-  config.plugins.push(
+  ].concat(isDev ? [] : [
 
     new webpack.optimize.UglifyJsPlugin({
       mangle: true,
@@ -144,8 +142,6 @@ if (process.env.NODE_ENV === 'production') {
       threshold: 10240,
       minRatio: 0
     })
+  ])
 
-  )
 }
-
-module.exports = config

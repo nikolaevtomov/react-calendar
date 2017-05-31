@@ -1,8 +1,5 @@
 import React from 'react'
-import { prettyFormat } from 'root/utils'
+import { Moment } from 'root/utils'
 
 export default ({ month }) =>
-  <option
-    value={prettyFormat(month)}>
-    {month.format('MMMM')}
-  </option>
+  <option value={month}> {Moment(month).format('MMMM')}</option>

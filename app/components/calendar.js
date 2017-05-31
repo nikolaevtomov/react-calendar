@@ -36,6 +36,7 @@ const Calendar = ({
     <Day handleClick={handleOnClick} key={day} day={day} dayClass={classes(day)} />)
 
   const year = prettyFormat(date || today)
+  const day = Moment(year).format('DD')
   const startYear = Moment(year).startOf('year')
   const endYear = Moment(year).endOf('year')
   const rangeMonths = Moment.range(startYear, endYear)
@@ -44,7 +45,7 @@ const Calendar = ({
   const handleOnChange = month => selectDate(month)
   const renderMonths = (
     <select className={'select'} value={year} onChange={e => handleOnChange(e.target.value)}>
-      {months.map(month => <Month handleChange={handleOnChange} key={month} month={month} />)}
+      {months.map(month => <Month handleChange={handleOnChange} key={month} month={`${Moment(month).format('YYYY-MM')}-${day}`} />)}
     </select>
   )
 
