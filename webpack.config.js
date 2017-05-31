@@ -1,5 +1,6 @@
 const webpack = require('webpack')
 const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const CompressionPlugin = require('compression-webpack-plugin')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
@@ -16,12 +17,15 @@ const isDev = BUILD_ENV !== 'production'
 module.exports = {
 
   entry: [
-    'babel-polyfill',
+    'babel-polyfill'
+  ].concat(isDev ? [
     'react-hot-loader/patch',
     `webpack-dev-server/client?http://${HOST}:${PORT}`,
     'webpack/hot/only-dev-server',
     path.join(__dirname, 'app', 'index.js')
-  ],
+  ] : [
+    path.join(__dirname, 'app', 'index.js')
+  ]),
 
   output: {
     path: path.join(__dirname, 'dist'),
@@ -81,7 +85,6 @@ module.exports = {
     }
   },
 
-  // eval, source-map, eval-source-map, cheap-source-map or cheap-module-source-map
   devtool: isDev ? 'cheap-source-map' : 'cheap-module-source-map',
 
   context: path.join(__dirname, 'app'),
@@ -96,11 +99,14 @@ module.exports = {
 
   plugins: [
 
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, 'app', 'index.html')
+    }),
+
     new webpack.HotModuleReplacementPlugin(),
 
     new ExtractTextPlugin({
       disable: isDev,
-      // filename: isDev ? 'bundle.css' : 'bundle.[hash].css',
       filename: 'bundle.[hash].css',
       allChunks: true
     }),
@@ -118,12 +124,32 @@ module.exports = {
   ].concat(isDev ? [] : [
 
     new webpack.optimize.UglifyJsPlugin({
-      mangle: true,
+      mangle: {
+        toplevel: true,
+        sort: true,
+        eval: true,
+        properties: true
+      },
       compress: {
         warnings: false,
-        pure_getters: true,
+        properties: true,
+        sequences: true,
+        dead_code: true,
+        conditionals: true,
+        comparisons: true,
+        evaluate: true,
+        booleans: true,
+        unused: true,
+        loops: true,
+        hoist_funs: true,
+        cascade: true,
+        if_return: true,
+        join_vars: true,
+        drop_console: true,
+        drop_debugger: true,
         unsafe: true,
-        // unsafe_comps: true,
+        hoist_vars: true,
+        negate_iife: true,
         screw_ie8: true
       },
       output: { comments: false },
