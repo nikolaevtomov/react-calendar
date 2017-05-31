@@ -25,7 +25,7 @@ module.exports = {
 
   output: {
     path: path.join(__dirname, 'dist'),
-    filename: isDev ? 'bundle.js' : 'bundle.js',
+    filename: isDev ? 'bundle.js' : 'bundle.[hash].js',
     publicPath: '/'
   },
 
