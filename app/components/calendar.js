@@ -44,6 +44,7 @@ const Calendar = ({
   const handleOnChange = month => selectDate(month)
   const renderMonths = (
     <select className={'select'} value={year} onChange={e => handleOnChange(e.target.value)}>
+      <option value={today}>Month</option>
       {months.map(month => <Month handleChange={handleOnChange} key={month} month={month} />)}
     </select>
   )
