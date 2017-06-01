@@ -1,64 +1,104 @@
-var webpack = require('webpack')
-var path = require('path')
-var ExtractTextPlugin = require('extract-text-webpack-plugin')
-var CompressionPlugin = require('compression-webpack-plugin')
-var precss = require('precss')
-var autoprefixer = require('autoprefixer')
+const webpack = require('webpack')
+const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const CompressionPlugin = require('compression-webpack-plugin')
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
-var BUILD_ENV = process.env.NODE_ENV
-var DEPLOYMENT_ENV = process.env.DEPLOYMENT_ENV || 'local'
+const BUILD_ENV = process.env.NODE_ENV
+const DEPLOYMENT_ENV = process.env.DEPLOYMENT_ENV || 'local'
+const HOST = process.env.CLIENT_HOST || '0.0.0.0'
+const PORT = process.env.CLIENT_PORT || 3000
 
-var isDev = BUILD_ENV !== 'production'
+const isDev = BUILD_ENV !== 'production'
+
+// console.log('BUILD_ENV', BUILD_ENV)
 
 module.exports = {
-  // eval-source-map, cheap-source-map or cheap-module-source-map
-  devtool: isDev ? 'eval' : 'cheap-module-source-map',
-  context: path.join(__dirname, 'app'),
 
   entry: [
-    'babel-polyfill',
-    'webpack-dev-server/client?http://0.0.0.0:8080',
-    'webpack/hot/only-dev-server',
+    'babel-polyfill'
+  ].concat(isDev ? [
     'react-hot-loader/patch',
+    `webpack-dev-server/client?http://${HOST}:${PORT}`,
+    'webpack/hot/only-dev-server',
     path.join(__dirname, 'app', 'index.js')
-  ],
+  ] : [
+    path.join(__dirname, 'app', 'index.js')
+  ]),
 
   output: {
+    path: path.join(__dirname, 'dist'),
     filename: isDev ? 'bundle.js' : 'bundle.[hash].js',
-    publicPath: '/',
-    path: path.join(__dirname, 'dist')
+    publicPath: ''
   },
 
   module: {
-    loaders: [
+    rules: [
       {
         test: /.js?$/,
-        loader: 'babel?cacheDirectory=true',
         include: path.join(__dirname, 'app'),
+        exclude: /(node_modules)/,
+        // use: ['babel-loader'],
+        use: ['babel-loader?cacheDirectory=true']
+      },
+      {
+        test: /\.css$/,
+        use: isDev
+        ? [ 'style-loader', 'css-loader', 'postcss-loader' ]
+        : ExtractTextPlugin.extract([
+          { loader: 'style-loader' },
+          { loader: 'css-loader', options: { minimize: true } },
+          { loader: 'postcss-loader' }
+        ]),
         exclude: /(node_modules)/
       },
-      { test: /\.css$/, loader: ExtractTextPlugin.extract('style!css!postcss') },
-      { test: /\.scss$/, loader: ExtractTextPlugin.extract('css!postcss!sass') },
-      { test: /\.html$/, loader: 'html' }
+      {
+        test: /\.scss$/,
+        use: isDev
+        ? [ 'style-loader', 'css-loader', 'postcss-loader', 'sass-loader' ]
+        : ExtractTextPlugin.extract({ use: [ 'css-loader', 'postcss-loader', 'sass-loader' ] }),
+        exclude: /(node_modules)/
+      },
+      { test: /\.html$/, use: ['html-loader'] },
+      {
+        test: /\.(jpg|png|gif)$/,
+        use: 'file-loader'
+      },
+      {
+        test: /\.(woff|woff2|eot|ttf|svg)$/,
+        use: {
+          loader: 'url-loader',
+          options: { limit: 100000 }
+        }
+      }
     ]
   },
 
-  include: [
-    path.resolve(__dirname, 'node_modules')
-  ],
-
-  postcss: function () {
-    return {
-      defaults: [precss, autoprefixer],
-      cleaner: [autoprefixer({ browsers: ['last 2 version'] })]
+  resolve: {
+    modules: ['node_modules'],
+    extensions: ['.jsx', '.scss', '.js', '.json'],
+    alias: {
+      root: path.resolve(__dirname, 'app'),
+      fonts: path.resolve(__dirname, 'app/static/fonts'),
+      images: path.resolve(__dirname, 'app/static/images')
     }
   },
 
+  devtool: isDev ? 'cheap-source-map' : 'cheap-module-source-map',
+
+  context: path.join(__dirname, 'app'),
+
+  devServer: {
+    hot: true,
+    historyApiFallback: true,
+    contentBase: path.join(__dirname, 'app'),
+    host: HOST,
+    port: PORT
+  },
+
   plugins: [
-    new ExtractTextPlugin(isDev ? 'bundle.css' : 'bundle.[hash].css'),
-    new webpack.optimize.DedupePlugin(),
-    new webpack.optimize.OccurenceOrderPlugin(),
-    new webpack.NoErrorsPlugin(),
+
     new webpack.DefinePlugin({
       '__DEV__': JSON.stringify(isDev),
       '__DEBUG__': JSON.stringify(process.env.DEBUG),
@@ -66,20 +106,63 @@ module.exports = {
       'process.env.NODE_ENV': JSON.stringify(BUILD_ENV),
       '__DEPLOYMENT_ENV__': JSON.stringify(DEPLOYMENT_ENV)
     }),
+
+    new ExtractTextPlugin({
+      disable: isDev,
+      filename: 'bundle.[hash].css',
+      allChunks: true
+    }),
+
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, 'app', 'index.html')
+    }),
+
+    new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /en/) // eslint-disable-line
+
+  ].concat(isDev ? [
+
+    new webpack.HotModuleReplacementPlugin()
+
+  ] : [
+
     new webpack.optimize.UglifyJsPlugin({
-      mangle: true,
+      mangle: {
+        toplevel: true,
+        sort: true,
+        eval: true,
+        properties: true
+      },
       compress: {
         warnings: false,
-        pure_getters: true,
+        properties: true,
+        sequences: true,
+        dead_code: true,
+        conditionals: true,
+        comparisons: true,
+        evaluate: true,
+        booleans: true,
+        unused: true,
+        loops: true,
+        hoist_funs: true,
+        cascade: true,
+        if_return: true,
+        join_vars: true,
+        drop_console: true,
+        drop_debugger: true,
         unsafe: true,
-        unsafe_comps: true,
+        hoist_vars: true,
+        negate_iife: true,
         screw_ie8: true
       },
-      output: {
-        comments: false
-      },
+      output: { comments: false },
       exclude: [/\.min\.js$/gi]
     }),
+
+    new OptimizeCssAssetsPlugin({
+      cssProcessor: require('cssnano'),
+      cssProcessorOptions: { discardComments: { removeAll: true } }
+    }),
+
     new CompressionPlugin({
       asset: '[path].gz[query]',
       algorithm: 'gzip',
@@ -87,20 +170,7 @@ module.exports = {
       threshold: 10240,
       minRatio: 0
     })
-  ],
 
-  resolve: {
-    modulesDirectories: ['node_modules'],
-    alias: {
-      root: path.resolve(__dirname, 'app'),
-      static: path.resolve(__dirname, 'static')
-    },
-    extensions: ['', '.jsx', '.scss', '.js', '.json']
-  },
-
-  devServer: {
-    historyApiFallback: true,
-    contentBase: path.join(__dirname, 'app')
-  }
+  ])
 
 }
