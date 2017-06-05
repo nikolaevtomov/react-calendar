@@ -11,11 +11,11 @@ npm install
 ```bash
 npm run dev
 ```
+http://localhost:3000/
 
 ### Production
 
 ```bash
 npm run build
 ```
-
-http://localhost:3000/
+http://onerous-leather.surge.sh/
